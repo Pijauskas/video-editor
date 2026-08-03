@@ -4,10 +4,10 @@
   "description": "YouTube ir video redaktorius",
   "main": "server.js",
   "scripts": {
-    "build": "npm install && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /opt/render/project/src/yt-dlp && chmod a+rx /opt/render/project/src/yt-dlp",
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "yt-dlp-exec": "^2.5.8"
   }
 }
