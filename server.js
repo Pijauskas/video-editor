@@ -40,4 +40,4 @@ app.get('/download', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveris veikia ant ${PORT port}`));
+app.listen(PORT, () => console.log(`Serveris veikia ant ${PORT}`));
