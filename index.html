@@ -43,30 +43,50 @@
                 return;
             }
 
-            status.innerText = "Siuntimas ruošiamas faile, palaukite...";
+            status.innerText = "Ruošiamas siuntimas naršyklėje...";
             status.style.color = "#ffa500";
 
             try {
-                const response = await fetch(`/api/download-link?url=${encodeURIComponent(url)}&format=${format}`);
+                const response = await fetch('https://co.wuk.sh/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        isAudioOnly: format === 'mp3'
+                    })
+                });
+
                 const data = await response.json();
 
-                if (data.url) {
-                    status.innerText = "Failas sėkmingai paruoštas, prasideda siuntimas!";
+                if (data && data.url) {
+                    status.innerText = "Siuntimas prasideda!";
                     status.style.color = "#4CAF50";
-
-                    // Sukuriame nematomą nuorodą siuntimui tame pačiame lange
+                    
                     const a = document.createElement('a');
                     a.href = data.url;
                     a.download = '';
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
+                } else if (data && data.picker && data.picker[0] && data.picker[0].url) {
+                    status.innerText = "Siuntimas prasideda!";
+                    status.style.color = "#4CAF50";
+
+                    const a = document.createElement('a');
+                    a.href = data.picker[0].url;
+                    a.download = '';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                 } else {
-                    status.innerText = data.error || "Nepavyko paruošti failo.";
+                    status.innerText = "Nepavyko apdoroti šios nuorodos.";
                     status.style.color = "#ff5555";
                 }
             } catch (err) {
-                status.innerText = "Įvyko ryšio klaida.";
+                status.innerText = "Nepavyko pasiekti tarnybos iš naršyklės.";
                 status.style.color = "#ff5555";
             }
         }
