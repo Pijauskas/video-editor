@@ -2,7 +2,7 @@
 <html lang="lt">
 <head>
     <meta charset="UTF-8">
-    <title>Mano Video Redaktorius ir YouTube Siuntėjas</title>
+    <title>Mano Video Redaktorius</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; background: #121212; color: white; }
         .box { background: #1e1e1e; padding: 20px; margin: 20px auto; width: 60%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
@@ -16,12 +16,12 @@
     <h1>Mano Video Redaktorius</h1>
 
     <div class="box">
-        <h2>YouTube Siuntimas (Tiesioginis)</h2>
+        <h2>YouTube Siuntėjas</h2>
         <p>Įklijuok YouTube video nuorodą:</p>
         <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=...">
         <br>
-        <button onclick="startDownload('mp4')">Parsisiųsti MP4 (Video)</button>
-        <button onclick="startDownload('mp3')" style="background: #4CAF50;">Parsisiųsti MP3 (Audio)</button>
+        <button onclick="downloadVideo('mp4')">Parsisiųsti MP4</button>
+        <button onclick="downloadVideo('mp3')" style="background: #4CAF50;">Parsisiųsti MP3</button>
         <p id="ytStatus" style="margin-top: 15px; font-size: 14px; color: #aaa;"></p>
     </div>
 
@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        function startDownload(format) {
+        async function downloadVideo(format) {
             const url = document.getElementById('ytUrl').value;
             const status = document.getElementById('ytStatus');
             
@@ -43,10 +43,39 @@
                 return;
             }
 
-            status.innerText = "Nukreipiama į siuntimo serverį...";
+            status.innerText = "Generuojama nuoroda siuntimui...";
             status.style.color = "#ffa500";
 
-            window.location.href = `/download?url=${encodeURIComponent(url)}&format=${format}`;
+            try {
+                // Naudojame viešą atviro kodo Cobalt API, kuris parūpina švarų failo srautą be jokių reklamų
+                const response = await fetch('https://co.wuk.sh/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        isAudioOnly: format === 'mp3',
+                        aFormat: 'mp3'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data && data.url) {
+                    status.innerText = "Siuntimas prasideda!";
+                    status.style.color = "#4CAF50";
+                    // Atidarome gautą tiesioginį failo adresą siuntimui
+                    window.location.href = data.url;
+                } else {
+                    status.innerText = "Nepavyko apdoroti šios nuorodos.";
+                    status.style.color = "#ff5555";
+                }
+            } catch (err) {
+                status.innerText = "Įvyko klaida siunčiant užklausą.";
+                status.style.color = "#ff5555";
+            }
         }
 
         const upload = document.getElementById('upload');
