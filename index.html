@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        async function downloadVideo(format) {
+        function downloadVideo(format) {
             const url = document.getElementById('ytUrl').value;
             const status = document.getElementById('ytStatus');
             
@@ -43,41 +43,11 @@
                 return;
             }
 
-            status.innerText = "Generuojama nuoroda...";
+            status.innerText = "Atidaromas siuntimas...";
             status.style.color = "#ffa500";
 
-            try {
-                // Naudojame patikimą Cobalt API per naršyklę
-                const response = await fetch('https://co.wuk.sh/api/json', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        url: url,
-                        isAudioOnly: format === 'mp3'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data && data.url) {
-                    status.innerText = "Siuntimas prasideda!";
-                    status.style.color = "#4CAF50";
-                    window.location.href = data.url;
-                } else if (data && data.picker) {
-                    status.innerText = "Siuntimas prasideda!";
-                    status.style.color = "#4CAF50";
-                    window.location.href = data.picker[0].url;
-                } else {
-                    status.innerText = "Nepavyko gauti failo nuorodos.";
-                    status.style.color = "#ff5555";
-                }
-            } catch (err) {
-                status.innerText = "Nepavyko pasiekti siuntimo serverio.";
-                status.style.color = "#ff5555";
-            }
+            // Saugus nukreipimas failo siuntimui
+            window.location.href = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=${format}`;
         }
 
         const upload = document.getElementById('upload');
