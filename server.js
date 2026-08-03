@@ -1,12 +1,12 @@
 const express = require('express');
-const { exec } = require('child_process');
+const ytdlp = require('yt-dlp-exec');
 const path = require('path');
 const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-app.get('/download', (req, res) => {
+app.get('/download', async (req, res) => {
     const videoUrl = req.query.url;
     const format = req.query.format || 'mp4';
 
@@ -17,28 +17,26 @@ app.get('/download', (req, res) => {
     const ext = format === 'mp3' ? 'mp3' : 'mp4';
     res.header('Content-Disposition', `attachment; filename="video.${ext}"`);
 
-    // Naudojame tiesioginį kelią iki mūsų įdiegtaro yt-dlp faile
-    const ytDlpPath = path.join(__dirname, 'yt-dlp');
-    const command = format === 'mp3' 
-        ? `"${ytDlpPath}" -x --audio-format mp3 -o - "${videoUrl}"`
-        : `"${ytDlpPath}" -f best -o - "${videoUrl}"`;
+    try {
+        const subprocess = ytdlp.stream(videoUrl, {
+            format: format === 'mp3' ? 'bestaudio' : 'best',
+            ...(format === 'mp3' && { extractAudio: true, audioFormat: 'mp3' })
+        });
 
-    console.log(`Vykdoma komanda: ${command}`);
+        subprocess.pipe(res);
 
-    const child = exec(command, { encoding: 'buffer', maxBuffer: 1024 * 1024 * 100 });
-    
-    child.stdout.pipe(res);
-    
-    child.stderr.on('data', (data) => {
-        console.error(`yt-dlp klaida: ${data.toString()}`);
-    });
-
-    child.on('close', (code) => {
-        console.log(`Procesas baigėsi su kodu: ${code}`);
-        if (code !== 0 && !res.headersSent) {
-            res.status(500).send('Klaida siunčiant video.');
+        subprocess.on('error', (err) => {
+            console.error('yt-dlp klaida:', err);
+            if (!res.headersSent) {
+                res.status(500).send('Klaida siunčiant video.');
+            }
+        });
+    } catch (err) {
+        console.error('Serverio klaida:', err);
+        if (!res.headersSent) {
+            res.status(500).send('Klaida apdorojant nuorodą.');
         }
-    });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
