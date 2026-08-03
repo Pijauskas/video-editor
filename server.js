@@ -1,5 +1,5 @@
 const express = require('express');
-const youtubedl = require('youtube-dl-exec');
+const ytdl = require('ytdl-core');
 const path = require('path');
 const app = express();
 
@@ -10,27 +10,25 @@ app.get('/download', async (req, res) => {
     const videoUrl = req.query.url;
     const format = req.query.format || 'mp4';
 
-    if (!videoUrl) {
-        return res.status(400).send('Nenurodyta nuoroda!');
+    if (!videoUrl || !ytdl.validateURL(videoUrl)) {
+        return res.status(400).send('Neteisinga arba nenurodyta YouTube nuoroda!');
     }
 
-    const ext = format === 'mp3' ? 'mp3' : 'mp4';
-    res.header('Content-Disposition', `attachment; filename="video.${ext}"`);
-
     try {
-        const subprocess = youtubedl.stream(videoUrl, {
-            format: format === 'mp3' ? 'bestaudio' : 'best',
-            ...(format === 'mp3' && { extractAudio: true, audioFormat: 'mp3' })
-        });
+        const ext = format === 'mp3' ? 'mp3' : 'mp4';
+        const quality = format === 'mp3' ? 'highestaudio' : 'highest';
 
-        subprocess.pipe(res);
+        res.header('Content-Disposition', `attachment; filename="video.${ext}"`);
 
-        subprocess.on('error', (err) => {
-            console.error('Siuntimo klaida:', err);
-            if (!res.headersSent) {
-                res.status(500).send('Klaida siunčiant video.');
-            }
-        });
+        ytdl(videoUrl, { quality: quality })
+            .on('error', (err) => {
+                console.error('Siuntimo klaida:', err);
+                if (!res.headersSent) {
+                    res.status(500).send('Klaida siunčiant video.');
+                }
+            })
+            .pipe(res);
+
     } catch (err) {
         console.error('Serverio klaida:', err);
         if (!res.headersSent) {
