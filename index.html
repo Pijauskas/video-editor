@@ -15,7 +15,6 @@
 <body>
     <h1>Mano Video Redaktorius</h1>
 
-    <!-- YouTube Siuntėjas be reklamų -->
     <div class="box">
         <h2>YouTube Siuntimas (Tiesioginis)</h2>
         <p>Įklijuok YouTube video nuorodą:</p>
@@ -26,7 +25,6 @@
         <p id="ytStatus" style="margin-top: 15px; font-size: 14px; color: #aaa;"></p>
     </div>
 
-    <!-- Kompiuterio video grotuvas -->
     <div class="box">
         <h2>Kompiuterio Video Grotuvas</h2>
         <input type="file" id="upload" accept="video/*">
@@ -45,14 +43,12 @@
                 return;
             }
 
-            status.innerText = "Siuntimas prasideda... Palaukite, failas tuoj bus paruoštas.";
+            status.innerText = "Nukreipiama į siuntimo serverį...";
             status.style.color = "#ffa500";
 
-            // Kreipiamės tiesiai į mūsų serverį, kad parsiųstų failą be jokių reklamų
             window.location.href = `/download?url=${encodeURIComponent(url)}&format=${format}`;
         }
 
-        // Kompiuterio video grotuvo logika
         const upload = document.getElementById('upload');
         const player = document.getElementById('player');
 
