@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <title>Mano Video Redaktorius ir YouTube Siuntėjas</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 30px; background: #121212; color: white; }
+        .box { background: #1e1e1e; padding: 20px; margin: 20px auto; width: 60%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        input[type="text"] { width: 70%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #444; background: #2a2a2a; color: white; }
+        button { padding: 10px 20px; background: #ff0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin: 5px; }
+        button:hover { background: #cc0000; }
+        video { max-width: 80%; border-radius: 8px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Mano Video Redaktorius</h1>
+
+    <!-- YouTube Siuntėjas be reklamų -->
+    <div class="box">
+        <h2>YouTube Siuntimas (Tiesioginis)</h2>
+        <p>Įklijuok YouTube video nuorodą:</p>
+        <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=...">
+        <br>
+        <button onclick="startDownload('mp4')">Parsisiųsti MP4 (Video)</button>
+        <button onclick="startDownload('mp3')" style="background: #4CAF50;">Parsisiųsti MP3 (Audio)</button>
+        <p id="ytStatus" style="margin-top: 15px; font-size: 14px; color: #aaa;"></p>
+    </div>
+
+    <!-- Kompiuterio video grotuvas -->
+    <div class="box">
+        <h2>Kompiuterio Video Grotuvas</h2>
+        <input type="file" id="upload" accept="video/*">
+        <br>
+        <video id="player" controls></video>
+    </div>
+
+    <script>
+        function startDownload(format) {
+            const url = document.getElementById('ytUrl').value;
+            const status = document.getElementById('ytStatus');
+            
+            if (!url) {
+                status.innerText = "Prašome įvesti YouTube nuorodą!";
+                status.style.color = "#ff5555";
+                return;
+            }
+
+            status.innerText = "Siuntimas prasideda... Palaukite, failas tuoj bus paruoštas.";
+            status.style.color = "#ffa500";
+
+            // Kreipiamės tiesiai į mūsų serverį, kad parsiųstų failą be jokių reklamų
+            window.location.href = `/download?url=${encodeURIComponent(url)}&format=${format}`;
+        }
+
+        // Kompiuterio video grotuvo logika
+        const upload = document.getElementById('upload');
+        const player = document.getElementById('player');
+
+        upload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const videoURL = URL.createObjectURL(file);
+                player.src = videoURL;
+            }
+        });
+    </script>
+</body>
+</html>
