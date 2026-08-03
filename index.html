@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        function downloadVideo(format) {
+        async function downloadVideo(format) {
             const url = document.getElementById('ytUrl').value;
             const status = document.getElementById('ytStatus');
             
@@ -43,11 +43,32 @@
                 return;
             }
 
-            status.innerText = "Atidaromas siuntimas...";
+            status.innerText = "Siuntimas ruošiamas faile, palaukite...";
             status.style.color = "#ffa500";
 
-            // Saugus nukreipimas failo siuntimui
-            window.location.href = `https://loader.to/api/button/?url=${encodeURIComponent(url)}&f=${format}`;
+            try {
+                const response = await fetch(`/api/download-link?url=${encodeURIComponent(url)}&format=${format}`);
+                const data = await response.json();
+
+                if (data.url) {
+                    status.innerText = "Failas sėkmingai paruoštas, prasideda siuntimas!";
+                    status.style.color = "#4CAF50";
+
+                    // Sukuriame nematomą nuorodą siuntimui tame pačiame lange
+                    const a = document.createElement('a');
+                    a.href = data.url;
+                    a.download = '';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    status.innerText = data.error || "Nepavyko paruošti failo.";
+                    status.style.color = "#ff5555";
+                }
+            } catch (err) {
+                status.innerText = "Įvyko ryšio klaida.";
+                status.style.color = "#ff5555";
+            }
         }
 
         const upload = document.getElementById('upload');
