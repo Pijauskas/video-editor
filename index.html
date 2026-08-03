@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        async function downloadVideo(format) {
+        function downloadVideo(format) {
             const url = document.getElementById('ytUrl').value;
             const status = document.getElementById('ytStatus');
             
@@ -46,36 +46,8 @@
             status.innerText = "Generuojama nuoroda siuntimui...";
             status.style.color = "#ffa500";
 
-            try {
-                // Naudojame viešą atviro kodo Cobalt API, kuris parūpina švarų failo srautą be jokių reklamų
-                const response = await fetch('https://co.wuk.sh/api/json', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        url: url,
-                        isAudioOnly: format === 'mp3',
-                        aFormat: 'mp3'
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data && data.url) {
-                    status.innerText = "Siuntimas prasideda!";
-                    status.style.color = "#4CAF50";
-                    // Atidarome gautą tiesioginį failo adresą siuntimui
-                    window.location.href = data.url;
-                } else {
-                    status.innerText = "Nepavyko apdoroti šios nuorodos.";
-                    status.style.color = "#ff5555";
-                }
-            } catch (err) {
-                status.innerText = "Įvyko klaida siunčiant užklausą.";
-                status.style.color = "#ff5555";
-            }
+            // Siunčiame per savo serverio maršrutą
+            window.location.href = `/download?url=${encodeURIComponent(url)}&format=${format}`;
         }
 
         const upload = document.getElementById('upload');
